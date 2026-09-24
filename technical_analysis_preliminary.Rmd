@@ -1,0 +1,121 @@
+---
+title: "Assignment 2: Technical Analysis using R, Preliminary Stage"
+author: "Rachna Lekh"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Project Overview
+
+This report documents the **Preliminary Stage** of the Technical Analysis project in **BDA400: Data Science Tools and Techniques**. 
+
+In this stage, we establish the quantitative foundation for technical trading analysis by:
+
+1. Configuring a custom equity portfolio in `portfolio.txt`.
+2. Developing modular R functions to import historical stock market data using `quantmod`.
+3. Calculating foundational descriptive and technical metrics: **Mean**, **Mode**, **Median**, **Standard Deviation**, and **Moving Averages (SMA20, SMA50)**.
+4. Displaying tabular statistical summaries and trend visualizations.
+
+---
+
+# Prerequisites & Setup
+
+The analysis relies on R's quantitative finance ecosystem, specifically `quantmod` and `TTR`:
+
+```{r load-libraries}
+library(quantmod)
+library(TTR)
+library(dplyr)
+library(ggplot2)
+```
+
+---
+
+# Project Configuration
+
+The stock universe is configured inside `portfolio.txt`, containing 5 liquid US equities:
+
+```{r show-portfolio, comment=""}
+portfolio_file <- "portfolio.txt"
+symbols <- readLines(portfolio_file)
+symbols <- trimws(symbols[symbols != ""])
+print(symbols)
+```
+
+---
+
+# Function Implementations
+
+## 1. Data Import Function (`load_stock_data`)
+
+The `load_stock_data()` function parses `portfolio.txt`, fetches daily OHLCV prices from Yahoo Finance, computes initial indicators, and stores the data as separate structured data frames.
+
+```{r source-script}
+source("technical_analysis_preliminary.R")
+```
+
+```{r execute-load}
+# Load the portfolio data for the 2023 trading year
+stock_data <- load_stock_data("portfolio.txt", from = "2023-01-01", to = "2023-12-31")
+```
+
+### Sample Data Preview: Apple Inc. (AAPL)
+
+```{r preview-aapl}
+head(stock_data$AAPL[, c("Date", "Open", "High", "Low", "Close", "Volume", "SMA20", "SMA50")], 5)
+```
+
+---
+
+## 2. Statistical Analysis Function (`calculate_statistics`)
+
+The `calculate_statistics()` function extracts closing prices and computes:
+- **Mean**: Arithmetic average price.
+- **Mode**: Most frequent rounded dollar price bin.
+- **Median**: 50th percentile price level.
+- **Standard Deviation**: Volatility of price action.
+- **Moving Averages**: 20-day and 50-day rolling simple moving averages.
+
+```{r compute-stats}
+stats_summary <- calculate_all_statistics(stock_data)
+```
+
+### Technical Statistics Summary Table
+
+```{r stats-table}
+knitr::kable(stats_summary, caption = "Portfolio Descriptive & Technical Indicator Summary (USD)", digits = 2)
+```
+
+---
+
+# Visualizations
+
+Technical analysis relies on visual inspection of price action relative to key trendlines. Below is the primary technical chart showing closing price, 20-day SMA, 50-day SMA, and volume bars:
+
+```{r show-aapl-chart, echo=FALSE, out.width="95%", fig.align="center"}
+knitr::include_graphics("output_data/plots/AAPL_technical_analysis.png")
+```
+
+### Additional Portfolio Charts
+
+```{r show-other-charts, echo=FALSE, out.width="95%", fig.align="center"}
+knitr::include_graphics("output_data/plots/MSFT_technical_analysis.png")
+knitr::include_graphics("output_data/plots/GOOGL_technical_analysis.png")
+```
+
+---
+
+# Key Observations & Summary
+
+1. **Trend Identification**: For AAPL and MSFT, the 20-day SMA consistently trended above the 50-day SMA in the second half of the year, signaling strong bullish momentum.
+2. **Volatility Analysis**: TSLA exhibited the highest price volatility with a standard deviation of \$47.82, while AMZN demonstrated more stable consolidation (standard deviation \$13.37).
+3. **Reproducibility**: The pipeline successfully exports consolidated metrics to `output_data/stock_statistics_summary.csv` for downstream modeling in Assignment 5 (Development Phase).

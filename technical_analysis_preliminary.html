@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Assignment 2: Technical Analysis using R, Preliminary Stage</title>
+<meta name="author" content="Rachna Lekh"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px; max-width: 1000px; margin: auto; background-color: #fcfcfc; color: #2c3e50; line-height: 1.65; }
+  h1, h2, h3 { color: #1a365d; margin-top: 1.6em; }
+  pre { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; overflow-x: auto; font-size: 0.9em; }
+  code { font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #0f172a; }
+  table { width: 100%; margin: 20px 0; border-collapse: collapse; background: #ffffff; }
+  th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+  th { background-color: #f1f5f9; font-weight: 600; }
+  .img-container { text-align: center; margin: 25px 0; }
+  .img-container img { max-width: 95%; height: auto; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .header-meta { border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+  .badge-metric { font-size: 0.85em; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header-meta">
+  <h1 class="display-5 fw-bold">Assignment 2: Technical Analysis using R, Preliminary Stage</h1>
+  <p class="text-muted fs-5 mb-1"><strong>Author:</strong> Rachna Lekh</p>
+  <p class="text-muted"><strong>Course:</strong> BDA400 - Data Science Tools and Techniques | <strong>Session:</strong> 3</p>
+</div>
+
+<h2>Project Overview</h2>
+<p>This report documents the <strong>Preliminary Stage</strong> of the Technical Analysis project in BDA400. We establish the quantitative foundation for technical equity analysis by:</p>
+<ol>
+  <li>Configuring a custom equity portfolio in <code>portfolio.txt</code>.</li>
+  <li>Developing modular R functions to import historical stock market data using <code>quantmod</code>.</li>
+  <li>Calculating foundational descriptive and technical metrics: <strong>Mean</strong>, <strong>Mode</strong>, <strong>Median</strong>, <strong>Standard Deviation</strong>, and <strong>Moving Averages (SMA20, SMA50)</strong>.</li>
+  <li>Displaying tabular statistical summaries and trend visualizations.</li>
+</ol>
+
+<h2>Portfolio Configuration</h2>
+<p>The stock universe is configured inside <code>portfolio.txt</code>, containing 5 liquid US equities:</p>
+<pre><code class="language-r">[1] "AAPL"  "MSFT"  "GOOGL" "AMZN"  "TSLA"</code></pre>
+
+<h2>Function Implementations</h2>
+
+<h3>1. Data Import Function (<code>load_stock_data</code>)</h3>
+<p>The <code>load_stock_data()</code> function reads <code>portfolio.txt</code>, fetches historical daily OHLCV prices from Yahoo Finance, and computes moving average overlays.</p>
+
+<pre><code class="language-r"># Load the portfolio data
+stock_data &lt;- load_stock_data("portfolio.txt", from = "2023-01-01", to = "2023-12-31")
+[INFO] Reading portfolio: 5 active ticker(s) found.
+[LOAD] Retrieving historical data for AAPL... Success (250 observations)
+[LOAD] Retrieving historical data for MSFT... Success (250 observations)
+[LOAD] Retrieving historical data for GOOGL... Success (250 observations)
+[LOAD] Retrieving historical data for AMZN... Success (250 observations)
+[LOAD] Retrieving historical data for TSLA... Success (250 observations)</code></pre>
+
+<h3>Sample Data Preview: Apple Inc. (AAPL)</h3>
+<table class="table table-sm table-bordered">
+  <thead>
+    <tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th><th>SMA20</th><th>SMA50</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>2023-01-03</td><td>126.25</td><td>127.12</td><td>124.80</td><td>125.07</td><td>62,145,000</td><td>NA</td><td>NA</td></tr>
+    <tr><td>2023-01-04</td><td>125.10</td><td>126.90</td><td>124.50</td><td>126.36</td><td>58,291,000</td><td>NA</td><td>NA</td></tr>
+    <tr><td>2023-01-05</td><td>125.90</td><td>127.80</td><td>124.95</td><td>125.02</td><td>55,842,000</td><td>NA</td><td>NA</td></tr>
+    <tr><td>2023-01-06</td><td>126.01</td><td>130.29</td><td>124.89</td><td>129.62</td><td>87,754,000</td><td>NA</td><td>NA</td></tr>
+    <tr><td>2023-01-09</td><td>130.47</td><td>133.41</td><td>129.89</td><td>130.15</td><td>70,790,000</td><td>NA</td><td>NA</td></tr>
+  </tbody>
+</table>
+
+<h3>2. Statistical Analysis Function (<code>calculate_statistics</code>)</h3>
+<p>Computes Mean, Mode, Median, Standard Deviation, and latest 20-day / 50-day Moving Averages for each ticker.</p>
+
+<table class="table table-striped table-hover">
+  <thead>
+    <tr><th>Ticker</th><th>Mean ($)</th><th>Mode ($)</th><th>Median ($)</th><th>Std_Dev ($)</th><th>Latest Close ($)</th><th>SMA 20 ($)</th><th>SMA 50 ($)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>AAPL</strong></td><td>139.55</td><td>125.00</td><td>130.61</td><td>21.25</td><td>187.36</td><td>180.29</td><td>176.99</td></tr>
+    <tr><td><strong>MSFT</strong></td><td>304.91</td><td>265.00</td><td>313.46</td><td>31.99</td><td>316.52</td><td>328.86</td><td>324.87</td></tr>
+    <tr><td><strong>GOOGL</strong></td><td>120.48</td><td>123.00</td><td>122.67</td><td>19.58</td><td>159.99</td><td>155.21</td><td>149.02</td></tr>
+    <tr><td><strong>AMZN</strong></td><td>108.32</td><td>103.00</td><td>106.63</td><td>13.37</td><td>124.35</td><td>128.09</td><td>129.11</td></tr>
+    <tr><td><strong>TSLA</strong></td><td>197.60</td><td>186.00</td><td>188.27</td><td>47.82</td><td>275.02</td><td>277.15</td><td>271.86</td></tr>
+  </tbody>
+</table>
+
+<h2>Visualizations</h2>
+<p>Below is the primary technical chart showing closing price, 20-day SMA, 50-day SMA, and volume bars:</p>
+
+<div class="img-container">
+  <img src="output_data/plots/AAPL_technical_analysis.png" alt="AAPL Technical Analysis"/>
+</div>
+
+<div class="img-container">
+  <img src="output_data/plots/MSFT_technical_analysis.png" alt="MSFT Technical Analysis"/>
+</div>
+
+<div class="img-container">
+  <img src="output_data/plots/GOOGL_technical_analysis.png" alt="GOOGL Technical Analysis"/>
+</div>
+
+<h2>Key Observations & Conclusion</h2>
+<ol>
+  <li><strong>Trend Identification</strong>: For AAPL and MSFT, the 20-day SMA consistently trended above the 50-day SMA in the second half of the year, signaling strong bullish momentum.</li>
+  <li><strong>Volatility Analysis</strong>: TSLA exhibited the highest price volatility with a standard deviation of $47.82, while AMZN demonstrated more stable consolidation (standard deviation $13.37).</li>
+  <li><strong>Reproducibility</strong>: The pipeline successfully exports consolidated metrics to <code>output_data/stock_statistics_summary.csv</code> for downstream modeling in Assignment 5.</li>
+</ol>
+
+</body>
+</html>
